@@ -1,0 +1,66 @@
+name: NBA Morning Recap & Dashboard
+
+on:
+  schedule:
+    # 05:30 UTC corresponds to 07:30 French Summer Time (CEST)
+    # 06:30 UTC corresponds to 07:30 French Winter Time (CET)
+    - cron: '30 5 * * *'
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: 'Optional date YYYYMMDD (e.g. 20240414 for historical tests)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  recap_and_deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run NBA Morning Recap Pipeline
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SPOILER_MODE: ${{ vars.SPOILER_MODE || 'true' }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL || 'https://AyoubeM.github.io/NbActu/' }}
+          FALLBACK_TO_US_HIGHLIGHTS: 'true'
+          OVERRIDE_DATE: ${{ github.event.inputs.target_date }}
+        run: |
+          python main.py "${{ github.event.inputs.target_date }}"
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Web Artifact to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
