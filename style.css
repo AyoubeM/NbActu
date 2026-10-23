@@ -312,16 +312,31 @@ header {
 
 /* Anti-Spoiler Blur */
 body.spoiler-mode .spoiled-score {
-  filter: blur(9px);
+  filter: blur(8px);
   user-select: none;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.1);
-  padding: 0.2rem 0.5rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 6px;
+  transition: filter 0.25s ease, background 0.25s ease, transform 0.15s ease;
 }
 
 body.spoiler-mode .spoiled-score:hover {
   filter: blur(4px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.spoiler-mode .spoiled-score:active {
+  transform: scale(0.96);
+}
+
+/* When clicked, unblur the score */
+body.spoiler-mode .spoiled-score.revealed {
+  filter: none !important;
+  user-select: auto !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
 }
 
 .game-card-footer {

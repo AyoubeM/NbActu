@@ -83,7 +83,7 @@ function renderGames(games) {
             <div class="streak-tag">${g.away_form?.streak_formatted || "-"}</div>
           </div>
           <div class="score-box">
-            <div class="score-display spoiled-score" onclick="this.classList.toggle('revealed')">
+            <div class="score-display spoiled-score" onclick="this.classList.toggle('revealed')" title="Cliquez pour dévoiler le score">
               ${away.score} - ${home.score}
             </div>
           </div>
