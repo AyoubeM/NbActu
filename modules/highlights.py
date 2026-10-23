@@ -115,21 +115,50 @@ def get_team_keywords(team_info: Dict[str, Any]) -> List[str]:
     return list(keywords)
 
 
-def match_game_video(videos: List[Dict[str, str]], away_keywords: List[str], home_keywords: List[str], require_highlight_keyword: bool = True) -> Optional[Dict[str, str]]:
-    """Checks if any video title contains keywords from BOTH teams."""
+import unicodedata
+
+def normalize_text(text: str) -> str:
+    """Removes accents and converts to lowercase for clean matching."""
+    nfkd = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).lower()
+
+
+def match_game_video(videos: List[Dict[str, str]], away_keywords: List[str], home_keywords: List[str]) -> Optional[Dict[str, str]]:
+    """
+    Ranks matching videos to select the actual match recap (e.g. 'Résumé : NUGGETS @ THUNDER')
+    over full show replays (e.g. 'REPLAY - NBA Extra') or shorts.
+    """
+    best_match = None
+    best_score = -999
+
     for v in videos:
-        t = v["title"].lower()
+        t = normalize_text(v["title"])
         has_away = any(k in t for k in away_keywords)
         has_home = any(k in t for k in home_keywords)
         
-        if require_highlight_keyword:
-            is_highlight = any(h in t for h in ["résumé", "resume", "highlights", "highlight", "replay", "extra"])
-            if has_away and has_home and is_highlight:
-                return v
-        else:
-            if has_away and has_home:
-                return v
+        if has_away and has_home:
+            score = 0
+            # Strong bonus for explicit match highlight keywords
+            if "resume" in t or "highlight" in t:
+                score += 50
+            if t.startswith("resume") or "full game highlight" in t:
+                score += 50
+            
+            # Penalize full-length show replays (e.g. NBA Extra full 50-minute episode)
+            if "replay" in t or "emission" in t:
+                score -= 100
+            
+            # Penalize shorts
+            if "#shorts" in t or "short" in t:
+                score -= 100
 
+            if score > best_score:
+                best_score = score
+                best_match = v
+
+    # Only return if score is acceptable (avoids returning a replay if no highlight exists)
+    if best_match and best_score >= 0:
+        return best_match
     return None
 
 
