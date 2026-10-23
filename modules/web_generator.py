@@ -25,11 +25,15 @@ def generate_web_assets(data: Dict[str, Any], web_dir: Path, data_dir: Path) -> 
         web_data_file = web_dir / "data.json"
         web_data_file.write_text(json_content, encoding="utf-8")
 
+        # Write directly to root data.json (for default GitHub Pages root deployment)
+        root_dir = web_dir.parent
+        (root_dir / "data.json").write_text(json_content, encoding="utf-8")
+
         # Write backup to data/recap.json
         recap_file = data_dir / "recap.json"
         recap_file.write_text(json_content, encoding="utf-8")
 
-        logger.info(f"Web assets successfully generated at {web_data_file}")
+        logger.info("Web assets successfully generated at web/data.json and root data.json")
         return True
     except Exception as e:
         logger.error(f"Error generating web assets: {e}")

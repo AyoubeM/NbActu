@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBA Actu • Dashboard Stats & Résumés Vidéo</title>
+  <meta name="description" content="Tous les résumés vidéo des matchs NBA de la nuit, diffuseurs en France (beIN Sports, Prime Video, League Pass) et statistiques complètes des joueurs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="spoiler-mode">
+
+  <header>
+    <div class="nav-container">
+      <div class="logo-area">
+        <div class="logo-badge">NBA</div>
+        <div class="logo-text">
+          <h1>NBA Actu</h1>
+          <span id="recap-date">Résumés & Stats du matin</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="spoiler-toggle" class="spoiler-toggle-btn active" title="Masquer ou afficher les scores">
+          <span id="spoiler-icon">🛡️</span>
+          <span id="spoiler-text">Anti-Spoiler : Activé</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="hero-tag" id="games-count-tag">Nuit NBA</span>
+      <h2>Les Matchs de la Nuit</h2>
+      <p>Retrouvez les résumés vidéo, la diffusion en France et les statistiques de chaque joueur de la ligue.</p>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="matches-tab">🏀 Matchs Terminés</button>
+      <button class="tab-btn" data-tab="upcoming-tab">🌙 Ce Soir en NBA</button>
+      <button class="tab-btn" data-tab="performers-tab">⭐ Top Performances</button>
+      <button class="tab-btn" data-tab="french-tab">🇫🇷 Focus Français</button>
+      <button class="tab-btn" data-tab="standings-tab">🏆 Classements & Forme</button>
+      <button class="tab-btn" data-tab="all-players-tab">🔍 Tous les Joueurs</button>
+    </nav>
+
+    <!-- Tab 1: Completed Matches & Highlights -->
+    <section id="matches-tab" class="tab-content active">
+      <div id="games-container" class="games-grid">
+        <div class="loading-state">Chargement des matchs de la nuit...</div>
+      </div>
+    </section>
+
+    <!-- Tab: Upcoming Matches -->
+    <section id="upcoming-tab" class="tab-content">
+      <div id="upcoming-container" class="games-grid"></div>
+    </section>
+
+    <!-- Tab 2: Top Performers -->
+    <section id="performers-tab" class="tab-content">
+      <div id="performers-container" class="performers-grid"></div>
+    </section>
+
+    <!-- Tab 3: French Focus -->
+    <section id="french-tab" class="tab-content">
+      <div id="french-container" class="performers-grid"></div>
+    </section>
+
+    <!-- Tab 4: Standings -->
+    <section id="standings-tab" class="tab-content">
+      <div class="standings-container">
+        <div class="standings-card">
+          <h3>🔵 Conférence Est</h3>
+          <table class="boxscore-table">
+            <thead>
+              <tr><th>#</th><th>Équipe</th><th>Bilan</th><th>Série</th><th>L10</th></tr>
+            </thead>
+            <tbody id="east-standings-body"></tbody>
+          </table>
+        </div>
+        <div class="standings-card">
+          <h3>🔴 Conférence Ouest</h3>
+          <table class="boxscore-table">
+            <thead>
+              <tr><th>#</th><th>Équipe</th><th>Bilan</th><th>Série</th><th>L10</th></tr>
+            </thead>
+            <tbody id="west-standings-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 5: All Players Searchable -->
+    <section id="all-players-tab" class="tab-content">
+      <div class="search-bar">
+        <input type="text" id="player-search" class="search-input" placeholder="Rechercher un joueur (ex: Wembanyama, Curry, Doncic, Brunson)...">
+      </div>
+      <div style="overflow-x: auto; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color);">
+        <table class="boxscore-table" style="font-size: 0.85rem;">
+          <thead>
+            <tr>
+              <th>Joueur</th>
+              <th>Équipe</th>
+              <th>MIN</th>
+              <th>PTS</th>
+              <th>REB</th>
+              <th>AST</th>
+              <th>STL</th>
+              <th>BLK</th>
+              <th>Tirs (FG)</th>
+              <th>3PT</th>
+              <th>+/-</th>
+              <th>GameScore</th>
+            </tr>
+          </thead>
+          <tbody id="all-players-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>NBA Actu • Données officielles NBA / ESPN • Diffuseurs officiels : beIN SPORTS, Amazon Prime Video & NBA League Pass.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
