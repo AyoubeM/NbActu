@@ -39,18 +39,24 @@
 
     <!-- Navigation Tabs -->
     <nav class="tabs">
-      <button class="tab-btn active" data-tab="matches-tab">🏀 Matchs & Résumés</button>
+      <button class="tab-btn active" data-tab="matches-tab">🏀 Matchs Terminés</button>
+      <button class="tab-btn" data-tab="upcoming-tab">🌙 Ce Soir en NBA</button>
       <button class="tab-btn" data-tab="performers-tab">⭐ Top Performances</button>
       <button class="tab-btn" data-tab="french-tab">🇫🇷 Focus Français</button>
       <button class="tab-btn" data-tab="standings-tab">🏆 Classements & Forme</button>
       <button class="tab-btn" data-tab="all-players-tab">🔍 Tous les Joueurs</button>
     </nav>
 
-    <!-- Tab 1: Matches & Highlights -->
+    <!-- Tab 1: Completed Matches & Highlights -->
     <section id="matches-tab" class="tab-content active">
       <div id="games-container" class="games-grid">
         <div class="loading-state">Chargement des matchs de la nuit...</div>
       </div>
+    </section>
+
+    <!-- Tab: Upcoming Matches -->
+    <section id="upcoming-tab" class="tab-content">
+      <div id="upcoming-container" class="games-grid"></div>
     </section>
 
     <!-- Tab 2: Top Performers -->

@@ -34,15 +34,18 @@ def _http_get(url: str, timeout: int = 10) -> Optional[Dict[str, Any]]:
 def get_target_date_str(override_date: str = "") -> str:
     """
     Returns the YYYYMMDD string for the games that happened during the night in France.
-    At 7:30 AM French time, night games correspond to yesterday's US date.
+    NBA games take place in the US evening (01h00 - 06h00 French time).
+    When running in France (at 7:30 AM or during the day), the games that just ended
+    correspond to yesterday's US calendar date.
     """
     if override_date and len(override_date) == 8 and override_date.isdigit():
         return override_date
     
-    # Calculate yesterday's date in US Eastern Time (UTC-5)
     now_utc = datetime.now(timezone.utc)
-    us_time = now_utc - timedelta(hours=8)
-    return us_time.strftime("%Y%m%d")
+    # Subtracting 16 hours ensures that anytime between 06:00 and 23:59 French time,
+    # we target the games that were played during the night that just ended.
+    night_games_date = now_utc - timedelta(hours=16)
+    return night_games_date.strftime("%Y%m%d")
 
 
 def get_scoreboard(date_str: str) -> List[Dict[str, Any]]:

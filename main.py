@@ -1,13 +1,14 @@
 """
 NBA Actu - Main Orchestrator
 Fetches NBA games of the night, identifies broadcasters in France,
-retrieves video highlights (FR or US fallback), computes team & player analytics,
-generates the Web Dashboard, and dispatches Discord notifications with anti-spoiler mode.
+retrieves video highlights (French beIN Sports NBA Extra first, fallback to US official NBA),
+computes team & player analytics, generates the Web Dashboard,
+and dispatches Discord notifications with anti-spoiler mode.
 """
 
 import sys
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from config import settings
 from modules.nba_api import (
     get_target_date_str,
@@ -32,29 +33,38 @@ logger = logging.getLogger("NbaActu")
 
 def run_pipeline(date_str: str = ""):
     target_date = get_target_date_str(date_str or settings.OVERRIDE_DATE)
-    logger.info(f"Starting NBA Actu pipeline for date: {target_date}")
+    logger.info(f"Targeting night games for US date: {target_date}")
 
     # 1. Fetch Scoreboard and Standings
     scoreboard_games = get_scoreboard(target_date)
     standings = get_standings()
-    logger.info(f"Retrieved {len(scoreboard_games)} games from NBA/ESPN scoreboard.")
 
-    # If no games for yesterday's US date (e.g., during off-season or test), try today's date
-    if not scoreboard_games and not (date_str or settings.OVERRIDE_DATE):
-        today_date = datetime.now().strftime("%Y%m%d")
-        logger.info(f"No games on {target_date}, checking current date {today_date}...")
-        scoreboard_games = get_scoreboard(today_date)
-        if scoreboard_games:
-            target_date = today_date
+    # Filter completed or live games vs upcoming unplayed games
+    completed_games = [g for g in scoreboard_games if g.get("is_final") or g.get("is_live")]
+    scheduled_games = [g for g in scoreboard_games if not g.get("is_final") and not g.get("is_live")]
 
-    # Preload highlight finder
+    # If no games completed for target_date and no explicit override was set,
+    # check yesterday to ensure we don't display unplayed 0-0 games
+    if not completed_games and not (date_str or settings.OVERRIDE_DATE):
+        prev_date = (datetime.strptime(target_date, "%Y%m%d") - timedelta(days=1)).strftime("%Y%m%d")
+        logger.info(f"No completed games on {target_date}. Checking previous night {prev_date}...")
+        prev_games = get_scoreboard(prev_date)
+        prev_completed = [g for g in prev_games if g.get("is_final") or g.get("is_live")]
+        if prev_completed:
+            completed_games = prev_completed
+            target_date = prev_date
+            logger.info(f"Found {len(completed_games)} completed games on {prev_date}.")
+
+    logger.info(f"Processing {len(completed_games)} completed/live game(s) for morning recap.")
+
+    # Preload highlight finder (beIN Sports NBA Extra FR + NBA US official)
     highlights_finder = HighlightsFinder()
     highlights_finder.preload_feeds()
 
     processed_games = []
     boxscores_list = []
 
-    for game in scoreboard_games:
+    for game in completed_games:
         game_id = game["id"]
         home = game["home"]
         away = game["away"]
@@ -66,7 +76,7 @@ def run_pipeline(date_str: str = ""):
         home_form = analyze_team_form(home.get("abbrev", ""), home.get("name", ""), standings)
         away_form = analyze_team_form(away.get("abbrev", ""), away.get("name", ""), standings)
 
-        # Highlights
+        # Highlights (FR priority, then US fallback)
         highlight = highlights_finder.find_highlight(away, home)
 
         # Full boxscore for all players
@@ -101,8 +111,8 @@ def run_pipeline(date_str: str = ""):
         f"Found {len(players_analysis.get('french_players', []))} French player performances."
     )
 
-    # 3. Upcoming Games
-    upcoming = get_upcoming_games()
+    # 3. Upcoming Games (Tonight's games)
+    upcoming = scheduled_games if scheduled_games else get_upcoming_games()
     for up in upcoming:
         up["broadcaster"] = get_french_broadcaster(up.get("broadcasts", []), up)
 

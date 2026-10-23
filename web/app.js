@@ -47,13 +47,14 @@ function renderAll(data) {
   document.getElementById("games-count-tag").textContent = `${gamesCount} Match(s) disputé(s)`;
 
   renderGames(data.games || []);
+  renderUpcoming(data.upcoming || []);
   renderPerformers(data.players_analysis?.top_performers || []);
   renderFrench(data.players_analysis?.french_players || []);
   renderStandings(data.standings || {});
   renderAllPlayers(data.players_analysis?.all_players || []);
 }
 
-// 1. Render Games
+// 1. Render Completed Games
 function renderGames(games) {
   const container = document.getElementById("games-container");
   if (!games.length) {
@@ -103,6 +104,50 @@ function renderGames(games) {
         </div>
         <div id="${boxId}" class="boxscore-drawer">
           ${renderBoxscoreTables(g.boxscore)}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// 1b. Render Upcoming Games (Tonight)
+function renderUpcoming(upcomingGames) {
+  const container = document.getElementById("upcoming-container");
+  if (!container) return;
+  if (!upcomingGames.length) {
+    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 2rem;">Aucun match programmé pour les prochaines 24h.</div>`;
+    return;
+  }
+
+  container.innerHTML = upcomingGames.map(g => {
+    const home = g.home;
+    const away = g.away;
+    const broadcaster = g.broadcaster || "NBA League Pass";
+    const statusText = g.status_detail || "À venir ce soir";
+
+    return `
+      <div class="game-card">
+        <div class="game-card-header">
+          <span class="broadcast-badge">${broadcaster}</span>
+          <span style="color: #60a5fa; font-size: 0.75rem; font-weight: 600;">⏰ ${statusText}</span>
+        </div>
+        <div class="match-body">
+          <div class="team-box">
+            <img class="team-logo" src="${away.logo}" alt="${away.name}" onerror="this.style.display='none'">
+            <div class="team-name">${away.shortName || away.name}</div>
+            <div class="team-meta">${away.record || ""}</div>
+          </div>
+          <div class="score-box">
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-dim);">VS</div>
+          </div>
+          <div class="team-box">
+            <img class="team-logo" src="${home.logo}" alt="${home.name}" onerror="this.style.display='none'">
+            <div class="team-name">${home.shortName || home.name}</div>
+            <div class="team-meta">${home.record || ""}</div>
+          </div>
+        </div>
+        <div class="game-card-footer" style="justify-content: center; font-size: 0.8rem; color: var(--text-dim);">
+          Diffusion officielle en direct : ${broadcaster}
         </div>
       </div>
     `;
